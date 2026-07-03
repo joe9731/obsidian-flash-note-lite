@@ -1,0 +1,410 @@
+/* ============================================================
+   Flash Note Lite - 最终优化样式
+   ============================================================ */
+
+/* ---------- 1. 弹窗容器和过渡动画 ---------- */
+.flash-note-single-layer {
+  transition: opacity 350ms ease, transform 350ms ease;
+  background-color: var(--modal-background);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-l);
+  border: 1px solid var(--background-modifier-border);
+  overflow: hidden;
+  transition: opacity 350ms ease, transform 350ms ease;
+  display: flex;
+  flex-direction: column;
+  min-height: 30%;
+  max-height: 90vh;
+  padding: 16px;
+}
+
+.flash-note-single-layer.modal-initial {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.flash-note-single-layer.modal-open {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.flash-note-single-layer.modal-closing {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+/* ---------- 2. 内部布局 ---------- */
+.flash-note-modal {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 0 !important;
+  background: transparent;
+}
+
+.flash-note-modal h3 {
+  margin: 0 0 12px 0 !important;
+  padding: 0 !important;
+  color: var(--text-normal);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+}
+
+/* ---------- 3. 输入框 ---------- */
+.flash-note-modal .quick-add-textarea {
+  flex: 1 1 auto;
+  min-height: 180px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  background-color: var(--background-modifier-form-field);
+  color: var(--text-normal);
+  resize: vertical;
+  transition: border-color 300ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 300ms cubic-bezier(0.22, 1, 0.36, 1),
+              background-color 300ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  margin-bottom: 12px;
+}
+
+.quick-add-textarea:focus {
+  outline: none;
+  border-color: var(--interactive-accent) !important;
+  box-shadow: 0 0 0 3px rgba(var(--interactive-accent-rgb), 0.25),
+              0 4px 16px rgba(var(--interactive-accent-rgb), 0.12) !important;
+  background-color: var(--background-primary);
+  transform: translateY(-1px);
+}
+
+.flash-note-modal .quick-add-textarea::placeholder {
+  color: var(--text-faint);
+}
+
+/* ---------- 4. 工具栏 ---------- */
+.quick-add-composer-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
+  margin-top: auto;
+  gap: 12px;
+}
+
+/* ---------- 5. 工具按钮 —— 胶囊池（按钮完全透明） ---------- */
+.quick-add-tool-group {
+  display: flex;
+  gap: 1px;
+  background: transparent;
+  padding: 2px 2px;
+  border-radius: 40px;
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.quick-add-tool-btn {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+
+  padding: 4px 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: 0;
+}
+
+.quick-add-tool-btn:hover {
+  background: none !important;
+  border: none !important;
+  color: var(--interactive-accent-hover);
+  transform: scale(1.05);
+}
+
+.quick-add-tool-btn:active {
+  transform: scale(0.88);
+}
+
+.quick-add-tool-btn svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.8;
+  fill: none;
+}
+
+/* ---------- 6. 发送按钮（圆形） ---------- */
+.quick-add-send-btn {
+  background-color: var(--interactive-normal);
+  border-radius: 50% !important;
+  width: 36px;
+  height: 36px;
+  padding: 0 !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: background-color 350ms cubic-bezier(0.22, 1, 0.36, 1),
+              color 350ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 400ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0;
+}
+.quick-add-send-btn:hover {
+  background-color: var(--interactive-accent-hover);
+  color: var(--text-on-accent);
+  box-shadow: var(--shadow-s);
+}
+.quick-add-send-btn:active {
+  transform: scale(0.88);
+}
+.quick-add-send-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+}
+
+/* 高亮状态（输入有内容） */
+.flash-note-modal .quick-add-textarea:not(:placeholder-shown) ~ .quick-add-composer-bar .quick-add-send-btn {
+  background-color: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 20px rgba(var(--interactive-accent-rgb), 0.35);
+  color: var(--text-on-accent) !important;
+}
+.flash-note-modal .quick-add-textarea:not(:placeholder-shown) ~ .quick-add-composer-bar .quick-add-send-btn svg {
+  stroke: var(--text-on-accent) !important;
+  fill: none !important;
+  color: var(--text-on-accent) !important;
+}
+
+/* ---------- 7. 隐藏关闭按钮 ---------- */
+.flash-note-single-layer .modal-close-button {
+  display: none !important;
+}
+
+/* ---------- 8. 移动端适配 ---------- */
+body.is-mobile .flash-note-modal,
+body.is-mobile .flash-note-modal * {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+body.is-mobile .flash-note-modal::-webkit-scrollbar,
+body.is-mobile .flash-note-modal *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+body.is-mobile .modal-container.flash-note-mobile-container {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  /* 毛玻璃（性能可选） */
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+body.is-mobile .modal-container.flash-note-mobile-container .modal {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  border-radius: 0 0 15px 15px !important;
+  border-top: none !important;
+  max-height: 85vh !important;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+body.is-mobile .flash-note-single-layer.modal-initial {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+body.is-mobile .flash-note-single-layer.modal-open {
+  opacity: 1;
+  transform: translateY(0);
+}
+body.is-mobile .flash-note-single-layer.modal-closing {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+body.is-mobile .flash-note-single-layer {
+  padding: 18px 18px 48px 18px !important;
+}
+body.is-mobile .flash-note-modal .quick-add-textarea {
+  height: 130px ;
+  min-height: 120px !important;
+  max-height: 65vh !important;
+}
+
+/* 手机端 */
+@media (max-width: 599px) {
+  body.is-mobile .quick-add-tool-group {
+    padding: 0px 0px;
+    gap: 0px;
+    height: 34px;
+  }
+  body.is-mobile .quick-add-tool-btn {
+    padding: 0px 8px;
+  }
+  body.is-mobile .quick-add-tool-btn svg {
+    width: 18px;
+    height: 18px;
+    margin-bottom: 10px;
+  }
+  body.is-mobile .quick-add-send-btn {
+    width: 36px;
+    height: 36px;
+  }
+  body.is-mobile .quick-add-send-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  body.is-mobile .quick-add-composer-bar {
+    gap: 8px;
+  }
+}
+
+/* 平板端 */
+@media (min-width: 600px) and (max-width: 1024px) {
+  body.is-mobile .modal-container.flash-note-mobile-container .modal {
+    max-width: 840px !important;
+    border-radius: var(--radius-l) !important;
+    max-height: 80vh !important;
+  }
+  body.is-mobile .flash-note-single-layer {
+    padding: 24px 24px 28px 24px !important;
+    border-radius: var(--radius-l) !important;
+  }
+  body.is-mobile .quick-add-tool-group {
+    padding: 4px 8px;
+    gap: 2px;
+    height:36px;
+  }
+  body.is-mobile .quick-add-tool-btn {
+    padding: 7px 9px;
+  }
+  body.is-mobile .quick-add-tool-btn svg {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 16px;
+  }
+  body.is-mobile .quick-add-send-btn {
+    width: 36px;
+    height: 36px;
+  }
+  body.is-mobile .quick-add-send-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+  body.is-mobile .quick-add-composer-bar {
+    gap: 10px;
+  }
+}
+
+/* ---------- 9. 导航栏按钮 ---------- */
+.flash-note-navbar-btn {
+  color: var(--icon-color);
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 1;
+  min-width: 24px;
+  text-align: center;
+  margin-left: 12px;
+}
+.flash-note-navbar-btn:active {
+  color: var(--interactive-accent);
+  transform: scale(0.90);
+}
+
+/* ---------- 10. 浮动按钮 FAB ---------- */
+.flash-note-fab {
+  position: fixed;
+  bottom: 80px;       /* 抬高避免与手机导航栏重叠 */
+  right: 18px;        /* 稍微内移 */
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(var(--interactive-accent-rgb), 0.35);
+  z-index: 1000;
+  cursor: pointer;
+  transition: opacity 250ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 250ms cubic-bezier(0.22, 1, 0.36, 1);
+  border: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 隐藏状态 - 使用 CSS 类控制，避免与 !important 冲突 */
+.flash-note-fab.flash-note-fab-hidden {
+  display: none;
+}
+
+.flash-note-fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 28px rgba(var(--interactive-accent-rgb), 0.45);
+}
+.flash-note-fab:active {
+  transform: scale(0.88);
+}
+.flash-note-fab svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2;
+}
+
+/* 手机端 FAB 位置调整 */
+@media (max-width: 599px) {
+  .flash-note-fab {
+    width: 48px;
+    height: 48px;
+    bottom: 72px;     /* 手机导航栏约 50-60px，抬高到 72px 避免重叠 */
+    right: 14px;
+  }
+  .flash-note-fab svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* 平板端 FAB 位置调整 */
+@media (min-width: 600px) and (max-width: 1024px) {
+  .flash-note-fab {
+    width: 56px;
+    height: 56px;
+    bottom: 30px;     /* 平板没有底部导航栏，可以靠下一些 */
+    right: 24px;      /* 但右移避免与 Obsidian 默认编辑/预览切换按钮重叠 */
+  }
+  .flash-note-fab svg {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+
+/* ---------- 12. 标签建议 ---------- */
