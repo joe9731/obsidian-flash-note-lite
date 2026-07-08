@@ -8,7 +8,8 @@ import {
   TFile,
   moment,
   setIcon,
-  Platform
+  Platform,
+  normalizePath
 } from 'obsidian';
 
 interface FlashNoteLiteSettings {
@@ -46,7 +47,7 @@ class FlashNoteModal extends Modal {
   }
 
   private onViewportResize = () => {
-    const viewport = window.visualViewport;
+    const viewport = this.app.activeWindow?.visualViewport;
     if (viewport && this.containerEl) {
       this.containerEl.style.height = `${viewport.height}px`;
       this.containerEl.style.top = `${viewport.offsetTop}px`;
@@ -55,20 +56,23 @@ class FlashNoteModal extends Modal {
 
   onOpen() {
     const { contentEl, modalEl, containerEl } = this;
+    const activeDoc = this.app.activeDocument ?? document;
+    const activeWin = this.app.activeWindow ?? window;
+
     contentEl.empty();
     contentEl.addClass('flash-note-modal');
 
     if (Platform.isMobile) {
       containerEl.addClass('flash-note-mobile-container');
-      window.visualViewport?.addEventListener('resize', this.onViewportResize);
-      window.visualViewport?.addEventListener('scroll', this.onViewportResize);
+      activeWin.visualViewport?.addEventListener('resize', this.onViewportResize);
+      activeWin.visualViewport?.addEventListener('scroll', this.onViewportResize);
       this.onViewportResize();
     }
 
     modalEl.addClass('flash-note-single-layer');
     modalEl.addClass('modal-initial');
 
-    requestAnimationFrame(() => {
+    activeWin.requestAnimationFrame(() => {
       modalEl.classList.remove('modal-initial');
       modalEl.classList.add('modal-open');
     });
@@ -88,7 +92,10 @@ class FlashNoteModal extends Modal {
     const toolGroup = composerBar.createDiv({ cls: 'quick-add-tool-group' });
 
     const createToolButton = (iconName: string, title: string, onClick: () => void) => {
-      const btn = toolGroup.createEl('button', { title });
+      const btn = toolGroup.createEl('button', {
+        title,
+        attr: { 'aria-label': title }
+      });
       btn.addClass('quick-add-tool-btn');
       setIcon(btn, iconName);
       btn.onclick = onClick;
@@ -101,7 +108,10 @@ class FlashNoteModal extends Modal {
     createToolButton('list-ordered', '有序列表', () => this.insertAtCursor('1. '));
     createToolButton('image-plus', '添加附件', () => this.attachFile());
 
-    const sendBtn = composerBar.createEl('button', { title: '保存记录' });
+    const sendBtn = composerBar.createEl('button', {
+      title: '保存记录',
+      attr: { 'aria-label': '保存记录' }
+    });
     sendBtn.addClass('quick-add-send-btn');
     setIcon(sendBtn, 'send');
     sendBtn.onclick = () => this.saveNote();
@@ -169,21 +179,22 @@ class FlashNoteModal extends Modal {
   }
 
   async attachFile() {
-    const input = document.createElement('input');
+    const activeDoc = this.app.activeDocument ?? document;
+    const input = activeDoc.createElement('input');
     input.type = 'file';
     input.onchange = async () => {
       const file = input.files?.[0];
       if (!file) return;
       try {
         const arrayBuffer = await file.arrayBuffer();
-        const folderPath = this.plugin.settings.attachmentFolder || '/';
+        const folderPath = normalizePath(this.plugin.settings.attachmentFolder || '/');
         const folder = this.app.vault.getAbstractFileByPath(folderPath);
         if (!folder) {
           await this.app.vault.createFolder(folderPath);
         }
         let fileName = file.name;
         const existing = this.app.vault.getAbstractFileByPath(
-          `${folderPath}/${fileName}`
+          normalizePath(`${folderPath}/${fileName}`)
         );
         if (existing) {
           const dotIndex = fileName.lastIndexOf('.');
@@ -192,7 +203,7 @@ class FlashNoteModal extends Modal {
             dotIndex !== -1 ? fileName.substring(0, dotIndex) : fileName;
           fileName = `${base}_${Date.now()}${ext}`;
         }
-        const filePath = `${folderPath}/${fileName}`;
+        const filePath = normalizePath(`${folderPath}/${fileName}`);
         await this.app.vault.createBinary(filePath, arrayBuffer);
         this.insertAtCursor(`![[${fileName}]]`);
         new Notice('附件已插入');
@@ -215,9 +226,9 @@ class FlashNoteModal extends Modal {
     if (settings.storageMode === 'append-daily') {
       const folder = settings.dailyNoteFolder || '';
       const dateStr = moment().format(settings.dailyNoteFormat);
-      targetPath = folder ? `${folder}/${dateStr}.md` : `${dateStr}.md`;
+      targetPath = normalizePath(folder ? `${folder}/${dateStr}.md` : `${dateStr}.md`);
     } else {
-      targetPath = settings.specificFilePath;
+      targetPath = normalizePath(settings.specificFilePath);
     }
     try {
       const timestamp = moment().format(settings.timestampFormat);
@@ -234,7 +245,9 @@ class FlashNoteModal extends Modal {
 
       const file = this.app.vault.getAbstractFileByPath(targetPath);
       if (file instanceof TFile) {
-        await this.app.vault.append(file, recordContent);
+        await this.app.vault.process(file, (data: string) => {
+          return data + recordContent;
+        });
       } else {
         const dirs = targetPath.split('/');
         dirs.pop();
@@ -259,10 +272,11 @@ class FlashNoteModal extends Modal {
     if (this.closing) return;
     this.closing = true;
     const { modalEl } = this;
+    const activeWin = this.app.activeWindow ?? window;
 
     if (Platform.isMobile) {
-      window.visualViewport?.removeEventListener('resize', this.onViewportResize);
-      window.visualViewport?.removeEventListener('scroll', this.onViewportResize);
+      activeWin.visualViewport?.removeEventListener('resize', this.onViewportResize);
+      activeWin.visualViewport?.removeEventListener('scroll', this.onViewportResize);
       this.containerEl.style.height = '';
       this.containerEl.style.top = '';
     }
@@ -372,7 +386,7 @@ class FlashNoteSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'Flash Note Lite 设置' });
+    containerEl.createEl('h2', { text: 'Options' });
 
     new Setting(containerEl)
       .setName('记录方式')
